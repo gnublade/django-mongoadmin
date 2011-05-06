@@ -1,5 +1,5 @@
-from mongoadmin.views import MongoAdmin, site
 from mongoadmin.forms import MongoAdminForm
+from mongoadmin.views import MongoAdmin, site
 
 def autodiscover(*args):
     ''' Discover submodules in Django apps that would otherwise be
@@ -12,6 +12,7 @@ def autodiscover(*args):
     from django.utils.module_loading import module_has_submodule
 
     for submod in args:
+        print submod
         for app in settings.INSTALLED_APPS:
             mod = import_module(app)
             if module_has_submodule(mod, submod):

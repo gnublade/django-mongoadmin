@@ -18,6 +18,7 @@ from django.views.decorators.csrf import csrf_protect
 from mongoadmin.forms import MongoAdminForm
 from mongoengine import Document
 from mongoengine.django.shortcuts import get_document_or_404, get_list_or_404
+from mongoadmin.pagination import Paginator as MongoPaginator
 
 LOGIN_FORM_KEY = 'this_is_the_login_form'
 
@@ -27,6 +28,7 @@ class MongoAdmin(object):
     verbose_name = None
     verbose_name_plural = None
     form = MongoAdminForm
+    max_pre_page = 100
 
     def __init__(self, model):
         self.model = model
@@ -44,7 +46,8 @@ class MongoAdmin(object):
         ## Validations
         for attr in self.list_items:
             if not hasattr(self.model, attr):
-                raise ValueError('%s is not an attribute of %s' % (attr, self.model._class_name))
+                raise ValueError('%s is not an attribute of %s' % \
+                                 (attr, self.model._class_name))
 
         if not issubclass(MongoAdminForm, self.form):
             raise TypeError('Form must be subclass of MongoAdminForm')
@@ -61,7 +64,8 @@ class MongoAdmin(object):
                 if callable(value):
                     value = value()
             else:
-                raise Exception(_('No attribute %(attr)s found for %(name)s') % {'attr': field, 'name': self.verbose_name})
+                raise Exception(_('No attribute %(attr)s found for %(name)s') % \
+                                {'attr': field, 'name': self.verbose_name})
             item.append(value)
         return item
 
@@ -187,6 +191,11 @@ class MongoAdminSite(object):
         else:
             from django.views.i18n import null_javascript_catalog as javascript_catalog
         return javascript_catalog(request, packages='django.conf')
+    
+    def get_queryset(self, cls, admin, current_page, request):
+        qs = cls.objects.all()
+        _page = MongoPaginator(qs, admin.max_pre_page)
+        return _page
 
     @method_decorator(never_cache)
     def index_view(self, request):
@@ -204,14 +213,18 @@ class MongoAdminSite(object):
 
     @method_decorator(never_cache)
     def changelist_view(self, request, collection):
+        current_page = request.GET.get('page', 1)
         cls, admin = self.verify_collection(collection)
-        queryset = cls.objects.all()
-        document_list = [(document, admin._get_items(document)) for document in queryset]
+        queryset = self.get_queryset(cls, admin, current_page,request)
+        current_page_obj = queryset.page(current_page)
+        document_list = [(document, admin._get_items(document)) \
+                         for document in current_page_obj.object_list]
         return render_to_response('mongoadmin/change_list.html', {
             'document_list': document_list,
             'collection': collection,
             'admin': admin,
-            'title': _('Select %s to change') % admin.verbose_name
+            'title': _('Select %s to change') % admin.verbose_name,
+            'current_page': current_page_obj
             }, context_instance=RequestContext(request))
 
     @method_decorator(never_cache)
