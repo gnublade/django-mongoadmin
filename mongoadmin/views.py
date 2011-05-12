@@ -81,13 +81,13 @@ class MongoAdminSite(object):
             raise TypeError('Registered documents must be a subclass of mongoengine.Document')
         if not issubclass(admin, MongoAdmin):
             raise TypeError('Document admins must be a subclass of mongoadmin.MongoAdmin')
-        if cls in self._registry:
+        if cls.__name__ in self._registry:
             raise ValueError('%s is already registered')
-        self._registry[cls._meta['collection']] = (cls, admin(cls))
+        self._registry[cls.__name__] = (cls, admin(cls))
 
     def unregister(self, cls):
-        if cls in self._registry:
-            del self._registry[cls]
+        if cls.class_name in self._registry:
+            del self._registry[cls.__name__]
 
     def verify_collection(self, collection):
         if collection not in self._registry:
@@ -195,7 +195,7 @@ class MongoAdminSite(object):
             doc_list.append({
                 'group': admin.group,
                 'name': admin.verbose_name,
-                'collection': cls._meta['collection']
+                'collection': cls.__name__
                 })
         return render_to_response('mongoadmin/index.html', {
             'title': _('MongoDB Administration'),
