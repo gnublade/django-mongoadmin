@@ -219,11 +219,12 @@ class MongoAdminSite(object):
         cls, admin = self.verify_collection(collection)
         if object_id:
             document = get_document_or_404(cls, id=object_id)
-            form = admin.get_form(request.POST or None, instance=document)
+            form = admin.get_form(request.POST or None, request.FILES,
+                                  instance=document)
             add, change = False, True
         else:
             document = None
-            form = admin.get_form(request.POST or None)
+            form = admin.get_form(request.POST or None, request.FILES)
             add, change = True, False
 
         if form.is_valid():
@@ -248,7 +249,8 @@ class MongoAdminSite(object):
             'admin': admin,
             'add': add,
             'change': change,
-            'title': _('Change %s') % admin.verbose_name
+            'has_file_field': True,
+            'title': _('Change %s') % admin.verbose_name,
             }, context_instance=RequestContext(request))
 
     @method_decorator(never_cache)
