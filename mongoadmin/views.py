@@ -131,8 +131,8 @@ class MongoAdminSite(object):
             url(r'^logout/$', wrap(self.logout), name='logout'),
             url(r'^(?P<collection>\w+)/$', wrap(self.changelist_view), name='changelist'),
             url(r'^(?P<collection>\w+)/add/$', wrap(self.change_view), name='add'),
-            url(r'^(?P<collection>\w+)/(?P<object_id>[0-9a-fA-F]+)/$', wrap(self.change_view), name='change'),
-            url(r'^(?P<collection>\w+)/(?P<object_id>[0-9a-fA-F]+)/delete/$', wrap(self.delete_view), name='delete'),
+            url(r'^(?P<collection>\w+)/(?P<object_id>.+)/$', wrap(self.change_view), name='change'),
+            url(r'^(?P<collection>\w+)/(?P<object_id>.+)/delete/$', wrap(self.delete_view), name='delete'),
         )
 
         return urlpatterns
