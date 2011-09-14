@@ -256,7 +256,7 @@ class MongoAdminSite(object):
     @method_decorator(never_cache)
     def delete_view(self, request, collection, object_id):
         cls, admin = self.verify_collection(collection)
-        document = get_document_or_404(cls, id=object_id)
+        document = get_document_or_404(cls, pk=object_id)
         if request.method == 'POST':
             document.delete()
             msg = _('The %(name)s "%(obj)s" has been deleted.') % {'name': force_unicode(admin.verbose_name), 'obj': force_unicode(document)}
