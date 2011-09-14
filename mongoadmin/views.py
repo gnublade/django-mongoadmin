@@ -61,7 +61,7 @@ class MongoAdmin(object):
                 if callable(value):
                     value = value()
             else:
-                raise Exception(_('No attribute %(attr)s found for %(name)s') % {'attr': field, 'name': self.verbose_name})
+                raise Exception(_('No attribute %(attr)s found for %(name)s') % {'attr': attr, 'name': self.verbose_name})
             item.append(value)
         return item
 
@@ -218,7 +218,7 @@ class MongoAdminSite(object):
     def change_view(self, request, collection, object_id=None):
         cls, admin = self.verify_collection(collection)
         if object_id:
-            document = get_document_or_404(cls, id=object_id)
+            document = get_document_or_404(cls, pk=object_id)
             form = admin.get_form(request.POST or None, request.FILES,
                                   instance=document)
             add, change = False, True
