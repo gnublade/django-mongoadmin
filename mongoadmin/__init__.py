@@ -12,7 +12,6 @@ def autodiscover(*args):
     from django.utils.module_loading import module_has_submodule
 
     for submod in args:
-        print submod
         for app in settings.INSTALLED_APPS:
             mod = import_module(app)
             if module_has_submodule(mod, submod):
